@@ -9,11 +9,12 @@ import fs from 'node:fs';
 const [outDir, ...items] = process.argv.slice(2);
 fs.mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] });
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+const VERT = process.env.V === '1';
+const page = await browser.newPage({ viewport: VERT ? { width: 1080, height: 1920 } : { width: 1920, height: 1080 } });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-await page.goto('file://' + path.resolve('index.html'));
+await page.goto('file://' + path.resolve('index.html') + (VERT ? '?v=1' : ''));
 await page.waitForFunction(() => window.READY === true, null, { timeout: 20000 }).catch(() => {});
 if (errors.length) { console.error(errors.join('\n')); }
 const el = await page.$('#c');

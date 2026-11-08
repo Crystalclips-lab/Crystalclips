@@ -2,7 +2,10 @@
 // parallax and drawing helpers. Everything is a pure function of time so any
 // frame can be rendered in any order (seek(t) determinism).
 
-const W = 1920, H = 1080, FPS = 60;
+const V = new URLSearchParams(location.search).has('v');   // vertical 9:16 build
+const W = V ? 1080 : 1920, H = V ? 1920 : 1080, FPS = 60;
+const WX = 960, WY = 540;  // world anchor (scenes are authored in 1920x1080 world space)
+{ const cv = document.getElementById('c'); if (cv) { cv.width = W; cv.height = H; } }
 
 const PAL = {
   night: '#09134B', violet: '#180A59', royal: '#243CDB', purple: '#6535A8',
@@ -104,7 +107,7 @@ function applyCam(ctx, cam, p = 1, shake = [0, 0]) {
   ctx.translate(W / 2 + shake[0], H / 2 + shake[1]);
   ctx.rotate((cam.r || 0) * p);
   ctx.scale(s, s);
-  ctx.translate(-(W / 2 + (cam.x - W / 2) * p), -(H / 2 + (cam.y - H / 2) * p));
+  ctx.translate(-(WX + (cam.x - WX) * p), -(WY + (cam.y - WY) * p));
 }
 function camLerp(a, b, t) {
   return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), z: lerp(a.z, b.z, t), r: lerp(a.r || 0, b.r || 0, t) };
@@ -196,6 +199,7 @@ function popText(ctx, txt, x, y, t, opts = {}) {
   const space = size * 0.28;
   const total = widths.reduce((a, b) => a + b, 0) + space * (words.length - 1);
   let cx = align === 'center' ? x - total / 2 : align === 'right' ? x - total : x;
+  recordBox(ctx, txt, cx, y - size / 2, total, size);
   words.forEach((w, i) => {
     const lt = t - i * stagger;
     let s = spring(lt, 2.4, 0.45);
@@ -302,8 +306,15 @@ function wrapLines(ctx, text, maxW) {
   if (cur) lines.push(cur);
   return lines;
 }
-// Debug registry: every text block records its box so QC can verify nothing overflows.
+// Debug registry: every text draw records its box (in screen pixels) so QC can verify
+// nothing overflows its panel or the frame.
 const TEXT_BOXES = [];
+function recordBox(ctx, text, x, y, w, h, maxW) {
+  const m = ctx.getTransform();
+  const pts = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([px, py]) => [m.a * px + m.c * py + m.e, m.b * px + m.d * py + m.f]);
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  TEXT_BOXES.push({ text, x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys), w, maxW });
+}
 function textBlock(ctx, text, x, y, maxW, o = {}) {
   const { size = 40, weight = 800, color = PAL.white, lh = 1.25, align = 'left', t = 1, stagger = 0.035, letter = 0 } = o;
   ctx.save();
@@ -320,7 +331,8 @@ function textBlock(ctx, text, x, y, maxW, o = {}) {
     ctx.globalAlpha = a;
     ctx.fillStyle = color; ctx.fillText(ln, x, y + i * size * lh + dy);
   });
+  const left = align === 'center' ? x - maxLine / 2 : align === 'right' ? x - maxLine : x;
+  recordBox(ctx, text, left, y, maxLine, lines.length * size * lh, maxW);
   ctx.restore();
-  TEXT_BOXES.push({ text, x, y, maxW, w: maxLine, h: lines.length * size * lh, lines: lines.length });
   return lines.length * size * lh;
 }

@@ -20,3 +20,11 @@ ffmpeg -loglevel error -y -ss "$half" -i video.mp4 -vf "fps=16/$half,scale=480:-
 
 echo "final: $(ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,sample_rate -show_entries format=duration -of compact ../heritage-mun-2026.mp4 | tr '\n' ' ')"
 ffmpeg -hide_banner -nostats -i ../heritage-mun-2026.mp4 -af ebur128=peak=true -f null - 2>&1 | grep -E "^\s+(I|Peak):"
+
+# --- vertical 9:16 version (same mix) ---
+if [ -f video-v.mp4 ]; then
+  ffmpeg -loglevel error -y -i video-v.mp4 -i mix_norm.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 256k -movflags +faststart -shortest ../heritage-mun-2026-vertical.mp4
+  ffmpeg -loglevel error -y -ss 0.5 -t "$half" -i video-v.mp4 -vf "fps=16/$half,scale=270:-1,tile=8x2:padding=6:color=0x05061C" -frames:v 1 ../qc/contact-sheet-vertical-1.png
+  ffmpeg -loglevel error -y -ss "$half" -i video-v.mp4 -vf "fps=16/$half,scale=270:-1,tile=8x2:padding=6:color=0x05061C" -frames:v 1 ../qc/contact-sheet-vertical-2.png
+  echo "vertical: $(ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate -show_entries format=duration -of compact ../heritage-mun-2026-vertical.mp4 | tr '\n' ' ')"
+fi

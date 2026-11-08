@@ -47,11 +47,11 @@ function drawCampus(ctx, cam, t, o = {}) {
   if (night > 0.05) { applyCam(ctx, cam, 0.03); for (const st of CAMPUS_STARS) circle(ctx, st.x, st.y, st.s, rgba('#E6E9FF', night * (0.4 + 0.5 * Math.sin(t * 1.5 + st.ph)))); }
   // sun (dawn) / moon (night)
   applyCam(ctx, cam, 0.06, sh);
-  const sunY = lerp(560, 900, night);
-  glow(ctx, 1560, sunY, 560, PAL.orange, 0.5 * (1 - night));
-  glow(ctx, 1560, sunY, 260, PAL.yellow, 0.7 * (1 - night));
-  if (night < 0.98) circle(ctx, 1560, sunY, 120, mixColor('#FFE58A', '#FF9A3D', night));
-  if (night > 0.02) { glow(ctx, 1720, 150, 200, '#6F7DF0', 0.35 * night); circle(ctx, 1720, 150, 52, rgba('#ECEBFF', night)); circle(ctx, 1702, 138, 9, rgba('#D3D0F6', night)); circle(ctx, 1738, 166, 12, rgba('#D3D0F6', night)); }
+  const sunY = lerp(560, 900, night), sunX = V ? 1180 : 1560;
+  glow(ctx, sunX, sunY, 560, PAL.orange, 0.5 * (1 - night));
+  glow(ctx, sunX, sunY, 260, PAL.yellow, 0.7 * (1 - night));
+  if (night < 0.98) circle(ctx, sunX, sunY, 120, mixColor('#FFE58A', '#FF9A3D', night));
+  if (night > 0.02 && !V) { glow(ctx, 1720, 150, 200, '#6F7DF0', 0.35 * night); circle(ctx, 1720, 150, 52, rgba('#ECEBFF', night)); circle(ctx, 1702, 138, 9, rgba('#D3D0F6', night)); circle(ctx, 1738, 166, 12, rgba('#D3D0F6', night)); }
   // clouds
   for (const [cx, cy, cw, p] of [[260, 250, 380, 0.1], [1150, 180, 460, 0.07], [1750, 300, 300, 0.12]]) {
     applyCam(ctx, cam, p, sh);
@@ -112,14 +112,14 @@ function drawCampus(ctx, cam, t, o = {}) {
     const y = dir > 0 ? 968 : 934, col = [PAL.pink, PAL.teal, PAL.yellow, '#FFFFFF', PAL.orange, PAL.sky][k];
     drawCar(ctx, x, y, dir, col, night);
   }
-  rrect(ctx, -1200, 995, 4400, 400, 0, mixColor('#3A2775', '#100B3A', night));
+  rrect(ctx, -1200, 995, 4400, 2400, 0, mixColor('#3A2775', '#100B3A', night));
   line(ctx, -1200, 995, 3200, 995, 4, mixColor('#7B5BC8', '#2A2280', night), 'butt');
   // lamp posts
   for (const lx of [-120, 520, 1100, 1800]) drawLamp(ctx, lx, 995, night);
   if (o.actors) o.actors(ctx);
   // foreground foliage framing (parallax > 1)
   applyCam(ctx, cam, 1.35, sh);
-  for (const [fx, fy, fr] of [[-120, 1080, 190], [60, 1150, 150], [2020, 1100, 200]]) {
+  if (!V) for (const [fx, fy, fr] of [[-120, 1080, 190], [60, 1150, 150], [2020, 1100, 200]]) {
     const leaf = pCircle(fx, fy, fr);
     shapeFill(ctx, leaf, mixColor('#2A1458', '#070522', night), { rim: mixColor('#7A3AA8', '#1C1660', night), r: 6, light: [1, -0.6] });
   }
@@ -219,7 +219,7 @@ function drawCar(ctx, x, y, dir, col, night) {
 const DUST = (() => { const r = rng(5); return Array.from({ length: 90 }, () => ({ x: r() * 2200 - 140, y: r() * 1200, s: 1 + r() * 3, sp: 6 + r() * 20, ph: r() * TAU })); })();
 function drawStage(ctx, cam, t, o = {}) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  const g = ctx.createRadialGradient(960, 480, 40, 960, 540, 1200);
+  const g = ctx.createRadialGradient(W / 2, H * 0.44, 40, W / 2, H / 2, Math.max(W, H) * 1.1);
   g.addColorStop(0, o.c0 || '#2A3BC8'); g.addColorStop(0.45, o.c1 || '#14197A'); g.addColorStop(1, o.c2 || '#070A33');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   applyCam(ctx, cam, 0.3);
@@ -479,7 +479,7 @@ function drawLok(ctx, cam, t, o = {}) {
 const CONFETTI = (() => { const r = rng(23); return Array.from({ length: 120 }, () => ({ x: r() * 2000 - 40, y: r() * 1400, sp: 120 + r() * 220, rot: r() * TAU, vr: (r() - 0.5) * 8, w: 8 + r() * 10, c: [PAL.yellow, PAL.teal, PAL.white, PAL.royal, PAL.pink][Math.floor(r() * 5)] })); })();
 function drawCelebration(ctx, cam, t, o = {}) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  const g = ctx.createRadialGradient(700, 520, 50, 900, 540, 1400); g.addColorStop(0, '#FFC04A'); g.addColorStop(0.45, '#FF7A2E'); g.addColorStop(1, '#D9358F');
+  const g = V ? ctx.createRadialGradient(540, 880, 50, 540, 960, 1500) : ctx.createRadialGradient(700, 520, 50, 900, 540, 1400); g.addColorStop(0, '#FFC04A'); g.addColorStop(0.45, '#FF7A2E'); g.addColorStop(1, '#D9358F');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   applyCam(ctx, cam, 0.3);
   ctx.save(); ctx.translate(700, 520); ctx.rotate(t * 0.12);

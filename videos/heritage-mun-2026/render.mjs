@@ -14,14 +14,16 @@ const FPS = 60;
 const workers = parseInt(args.workers || '4', 10);
 const outFile = path.resolve(args.out || 'build/video.mp4');
 const crf = args.crf || '17';
-const segDir = path.resolve('build/segments');
+const VERT = !!args.v;
+const [VW, VH] = VERT ? [1080, 1920] : [1920, 1080];
+const segDir = path.resolve(VERT ? 'build/segments-v' : 'build/segments');
 fs.mkdirSync(segDir, { recursive: true });
 
 async function openPage(browser) {
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
-  await page.goto('file://' + path.resolve('index.html'));
+  await page.goto('file://' + path.resolve('index.html') + (VERT ? '?v=1' : ''));
   await page.waitForFunction(() => window.READY === true, null, { timeout: 30000 });
   if (errors.length) throw new Error(errors.join('\n'));
   const cdp = await page.context().newCDPSession(page);
@@ -53,7 +55,7 @@ async function worker(i) {
   const { page, cdp } = await openPage(browser);
   for (let f = a; f < b; f++) {
     await page.evaluate(t => window.seek(t), f / FPS);
-    const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', optimizeForSpeed: true, clip: { x: 0, y: 0, width: 1920, height: 1080, scale: 1 } });
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', optimizeForSpeed: true, clip: { x: 0, y: 0, width: VW, height: VH, scale: 1 } });
     const buf = Buffer.from(data, 'base64');
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
     done++;
