@@ -1,0 +1,97 @@
+{
+  "title": "Heritage MUN 2026",
+  "voice": "af_heart",
+  "speed": 1.1,
+  "lead_in": 0.7,
+  "tail": 2.1,
+  "phoneme_fixes": {
+    "sɐbˈɑː": "sˈʌbɑː"
+  },
+  "lines": [
+    {
+      "id": "L1",
+      "pause": 0.25,
+      "text": "Every day at Heritage, you train to save lives."
+    },
+    {
+      "id": "L2",
+      "pause": 0.5,
+      "text": "This November, you train to change the world."
+    },
+    {
+      "id": "L3",
+      "pause": 0.7,
+      "text": "Heritage MUN, twenty twenty-six."
+    },
+    {
+      "id": "L4",
+      "pause": 0.3,
+      "text": "Four committees. Four real debates."
+    },
+    {
+      "id": "L5",
+      "pause": 1.65,
+      "text": "The Security Council, on Sudan."
+    },
+    {
+      "id": "L6",
+      "pause": 1.45,
+      "text": "The General Assembly, on reparations."
+    },
+    {
+      "id": "L7",
+      "pause": 1.45,
+      "text": "The W H O, on the next pandemic."
+    },
+    {
+      "id": "L8",
+      "pause": 0.85,
+      "text": "And the Lok Sabha, putting India's own laws under review."
+    },
+    {
+      "id": "L9",
+      "pause": 0.5,
+      "text": "For Heritage students, delegates and Executive Board, registration is free."
+    },
+    {
+      "id": "L10",
+      "pause": 0.4,
+      "text": "November twenty-eighth and twenty-ninth, right here on campus."
+    },
+    {
+      "id": "L11",
+      "pause": 0,
+      "text": "Your college. Your platform. Your opportunity to lead."
+    }
+  ],
+  "event": {
+    "name": "Heritage MUN 2026",
+    "dates": "28th–29th November 2026",
+    "venue": "Heritage Institute of Medical Sciences",
+    "address": "NH-2 (G.T. Road Bypass), Bhadwar, MohanSarai, Varanasi",
+    "organiser": "Academic Committee 2026-27",
+    "committees": [
+      {
+        "short": "UNSC",
+        "name": "United Nations Security Council",
+        "agenda": "Sudan: Balancing the Protection of Civilians with State Sovereignty amid the Ongoing Conflict"
+      },
+      {
+        "short": "UNGA",
+        "name": "United Nations General Assembly",
+        "agenda": "Reparations for Historical Injustices: Addressing Questions of Responsibility, Recognition and Restitution"
+      },
+      {
+        "short": "WHO",
+        "name": "World Health Organization",
+        "agenda": "The Next Pandemic: Global Responsibility, Preparedness and Equitable Response."
+      },
+      {
+        "short": "LOK SABHA",
+        "name": "House of the People, Parliament of India",
+        "agenda": "A Parliamentary Review of the Anti-Defection Law, UPI and Hindi in India’s Administration"
+      }
+    ],
+    "offer": "No registration fees for Heritage Institute of Medical Sciences students participating as Delegates or Executive Board (EB) members"
+  }
+}

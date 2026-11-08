@@ -5,3 +5,4 @@ videos/*/setup.log
 node_modules/
 __pycache__/
 videos/*/assets/fonts/
+videos/*/models
