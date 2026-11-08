@@ -1,0 +1,7 @@
+# large/generated files for video projects
+videos/*/models/
+videos/*/build/
+videos/*/setup.log
+node_modules/
+__pycache__/
+videos/*/assets/fonts/
