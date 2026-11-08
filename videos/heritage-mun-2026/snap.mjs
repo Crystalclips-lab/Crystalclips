@@ -9,12 +9,14 @@ import fs from 'node:fs';
 const [outDir, ...items] = process.argv.slice(2);
 fs.mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] });
-const VERT = process.env.V === '1';
-const page = await browser.newPage({ viewport: VERT ? { width: 1080, height: 1920 } : { width: 1920, height: 1080 } });
+const VERT = process.env.V === '1', SSF = parseFloat(process.env.SS || '1');
+const [BW, BH] = (VERT ? [1080, 1920] : [1920, 1080]).map(v => Math.round(v * SSF));
+const page = await browser.newPage({ viewport: { width: BW, height: BH } });
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-await page.goto('file://' + path.resolve('index.html') + (VERT ? '?v=1' : ''));
+const q = new URLSearchParams(); if (VERT) q.set('v', '1'); if (SSF !== 1) q.set('ss', String(SSF));
+await page.goto('file://' + path.resolve('index.html') + (q.toString() ? '?' + q : ''));
 await page.waitForFunction(() => window.READY === true, null, { timeout: 20000 }).catch(() => {});
 if (errors.length) { console.error(errors.join('\n')); }
 const el = await page.$('#c');

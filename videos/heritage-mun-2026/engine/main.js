@@ -6,7 +6,7 @@
 
 const canvas = document.getElementById('c');
 const out = canvas.getContext('2d');
-const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+const mk = () => { const c = document.createElement('canvas'); c.width = Math.round(W * SS); c.height = Math.round(H * SS); return c; };
 const bufA = mk(), bufB = mk(), bufM = mk();
 const ctxA = bufA.getContext('2d'), ctxB = bufB.getContext('2d'), ctxM = bufM.getContext('2d');
 

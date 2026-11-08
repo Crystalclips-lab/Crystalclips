@@ -2,10 +2,29 @@
 // parallax and drawing helpers. Everything is a pure function of time so any
 // frame can be rendered in any order (seek(t) determinism).
 
-const V = new URLSearchParams(location.search).has('v');   // vertical 9:16 build
-const W = V ? 1080 : 1920, H = V ? 1920 : 1080, FPS = 60;
+const QP = new URLSearchParams(location.search);
+const V = QP.has('v');                     // vertical 9:16 build
+const SS = +(QP.get('ss') || 1);           // supersampling: output = logical size x SS (e.g. 4/3 -> 1440x2560)
+const FPS = +(QP.get('fps') || 60);        // frame rate (motion blur follows the real shutter time)
+const W = V ? 1080 : 1920, H = V ? 1920 : 1080;   // logical canvas size; all drawing uses these units
 const WX = 960, WY = 540;  // world anchor (scenes are authored in 1920x1080 world space)
-{ const cv = document.getElementById('c'); if (cv) { cv.width = W; cv.height = H; } }
+{ const cv = document.getElementById('c'); if (cv) { cv.width = Math.round(W * SS); cv.height = Math.round(H * SS); } }
+// Resolution independence: every explicit transform is pre-scaled by SS, so shapes, text,
+// rims and lines are genuinely redrawn at the higher resolution (not upscaled pixels).
+// Full-frame buffer copies (drawImage(canvas, x, y)) are drawn at the logical frame size.
+if (SS !== 1) {
+  const P = CanvasRenderingContext2D.prototype, st = P.setTransform, di = P.drawImage;
+  P.setTransform = function (a, b, c, d, e, f) {
+    if (typeof a === 'object') return st.call(this, a.a * SS, a.b * SS, a.c * SS, a.d * SS, a.e * SS, a.f * SS);
+    return st.call(this, a * SS, b * SS, c * SS, d * SS, e * SS, f * SS);
+  };
+  P.resetTransform = function () { return st.call(this, SS, 0, 0, SS, 0, 0); };
+  const BW = Math.round(W * SS), BH = Math.round(H * SS);
+  P.drawImage = function (img, ...a) {
+    if (a.length === 2 && img instanceof HTMLCanvasElement && img.width === BW && img.height === BH) return di.call(this, img, a[0], a[1], W, H);
+    return di.call(this, img, ...a);
+  };
+}
 
 const PAL = {
   night: '#09134B', violet: '#180A59', royal: '#243CDB', purple: '#6535A8',
@@ -208,7 +227,10 @@ function popText(ctx, txt, x, y, t, opts = {}) {
     if (a > 0.001) {
       ctx.save();
       ctx.translate(cx + widths[i] / 2, y + (1 - s) * size * 0.35);
-      ctx.scale(Math.max(0.001, s), Math.max(0.001, s));
+      // multi-word lines never scale past 100%, so word spacing can never shrink (the bounce is
+      // carried by the vertical overshoot); single words may overshoot freely
+      const sc = Math.min(Math.max(0.001, s), words.length > 1 ? 1.0 : 1.12);
+      ctx.scale(sc, sc);
       ctx.globalAlpha *= clamp(a);
       ctx.textAlign = 'center';
       if (shadow) { ctx.fillStyle = shadow; ctx.fillText(w, 0, size * 0.07); }

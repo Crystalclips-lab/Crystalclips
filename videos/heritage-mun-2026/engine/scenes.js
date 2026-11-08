@@ -196,7 +196,7 @@ function drawPanel(ctx, t, c) {
   ctx.save(); ctx.translate(V ? 0 : off, V ? off : 0); ctx.globalAlpha = a;
   const P = pRect(PANEL.x, PANEL.y, PANEL.w, PANEL.h, 36);
   // frosted-glass backdrop: blur what's behind the panel
-  ctx.save(); ctx.clip(P); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.filter = 'blur(16px)'; ctx.drawImage(ctx.canvas, 0, 0); ctx.restore();
+  ctx.save(); ctx.clip(P); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.filter = `blur(${16 * SS}px)`; ctx.drawImage(ctx.canvas, 0, 0); ctx.restore();
   ctx.fillStyle = 'rgba(7,9,40,0.74)'; ctx.fill(P);
   ctx.save(); ctx.clip(P); ctx.fillStyle = c.accent; ctx.fillRect(PANEL.x, PANEL.y, 12, PANEL.h); ctx.restore();
   ctx.lineWidth = 2; ctx.strokeStyle = rgba(c.accent, 0.55); ctx.stroke(P);
@@ -348,7 +348,7 @@ function drawFreeScene(ctx, t) {
 // ---------------------------------------------------------------------------
 // 9. CAMPUS AT NIGHT — dates, venue, call to action, end card
 // ---------------------------------------------------------------------------
-const C9 = { a: S('L10') - 0.35, dates: S('L10') + 0.1, datesOut: S('L11') - 0.25, y1: S('L11') + 0.0, y2: S('L11') + 0.85, y3: S('L11') + 1.7, card: En('L11') + 0.3 };
+const C9 = { a: S('L10') - 0.35, dates: S('L10') + 0.1, datesOut: S('L11') - 0.4, y1: S('L11') + 0.0, y2: S('L11') + 0.85, y3: S('L11') + 1.7, card: En('L11') + 0.3 };
 ev(C9.dates, 'impact', { gain: 0.45 }); ev(C9.dates + 0.25, 'pop', { gain: 0.6 }); ev(C9.dates + 0.4, 'whoosh', { gain: 0.4 });
 ev(C9.y1, 'pop'); ev(C9.y2, 'pop'); ev(C9.y3, 'pop'); ev(C9.card, 'chime'); ev(C9.card, 'riser', { dur: 0.3 });
 function nightCam(t) {

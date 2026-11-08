@@ -10,20 +10,22 @@ import fs from 'node:fs';
 const { chromium } = createRequire(import.meta.url)('playwright');
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1]]] : a), []));
-const FPS = 60;
+const FPS = parseInt(args.fps || '60', 10);
+const SSF = parseFloat(args.ss || '1');
 const workers = parseInt(args.workers || '4', 10);
 const outFile = path.resolve(args.out || 'build/video.mp4');
 const crf = args.crf || '17';
 const VERT = !!args.v;
-const [VW, VH] = VERT ? [1080, 1920] : [1920, 1080];
-const segDir = path.resolve(VERT ? 'build/segments-v' : 'build/segments');
+const [VW, VH] = (VERT ? [1080, 1920] : [1920, 1080]).map(v => Math.round(v * SSF));
+const segDir = path.resolve(`build/segments${VERT ? '-v' : ''}-${VW}x${VH}-${FPS}`);
 fs.mkdirSync(segDir, { recursive: true });
 
 async function openPage(browser) {
   const page = await browser.newPage({ viewport: { width: VW, height: VH }, deviceScaleFactor: 1 });
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
-  await page.goto('file://' + path.resolve('index.html') + (VERT ? '?v=1' : ''));
+  const q = new URLSearchParams(); if (VERT) q.set('v', '1'); if (SSF !== 1) q.set('ss', String(SSF)); if (FPS !== 60) q.set('fps', String(FPS));
+  await page.goto('file://' + path.resolve('index.html') + (q.toString() ? '?' + q : ''));
   await page.waitForFunction(() => window.READY === true, null, { timeout: 30000 });
   if (errors.length) throw new Error(errors.join('\n'));
   const cdp = await page.context().newCDPSession(page);
@@ -50,7 +52,8 @@ async function worker(i) {
   if (a >= b) return null;
   const seg = path.join(segDir, `seg_${String(i).padStart(2, '0')}.mp4`);
   const ff = spawn('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', crf, '-pix_fmt', 'yuv420p', '-tune', 'animation', '-r', String(FPS), seg],
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', crf, '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-tune', 'animation',
+    '-x264-params', 'aq-mode=3:aq-strength=0.9', '-r', String(FPS), seg],
     { stdio: ['pipe', 'inherit', 'inherit'] });
   const { page, cdp } = await openPage(browser);
   for (let f = a; f < b; f++) {

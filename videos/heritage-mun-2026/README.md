@@ -8,6 +8,12 @@ Medical Sciences, NH-2 G.T. Road Bypass, Bhadwar, MohanSarai, Varanasi), in two 
 
 Both are H.264 + AAC with faststart, loudness-normalised to -14 LUFS.
 
+### Vertical 2K masters
+- `heritage-mun-2026-vertical-2k-60fps.mp4`: 1440×2560, 60 fps. **Upload this one to Instagram.**
+- `heritage-mun-2026-vertical-2k-120fps.mp4`: 1440×2560, 120 fps. Every frame is unique, not duplicated. Smoothest when played directly on a 120 Hz phone. Instagram and YouTube play back at 60 fps or less, so this is a local-playback master.
+
+Both are rendered natively at 2K: the engine redraws every shape, rim light and glyph at 1.333× supersampling (`?ss=`), not by upscaling pixels. Motion blur follows the real shutter time at each frame rate (`?fps=`). Encoding: x264 High profile, CRF 15, `aq-mode=3` against gradient banding, AAC 320 kbps. Instagram displays Reels at 1080×1920, but starting from a sharper 2K source survives its re-compression better.
+
 ## Content (from the Academic Committee's announcement)
 
 | Committee | Agenda |
@@ -35,6 +41,10 @@ node render.mjs --workers 4                      # landscape frames  -> build/vi
 node render.mjs --workers 4 --v 1 --out build/video-v.mp4   # vertical frames
 python3 audio.py                                 # score + SFX, ducked under the voice
 ./finish.sh                                      # loudnorm, mux both formats, contact sheets
+# vertical 2K masters
+node render.mjs --workers 4 --v 1 --ss 1.3333333333 --fps 60  --crf 15 --out build/video-v-2k60.mp4
+node render.mjs --workers 4 --v 1 --ss 1.3333333333 --fps 120 --crf 15 --out build/video-v-2k120.mp4
+./finish-2k.sh                                   # mux with the same mix, verify resolution / fps / LUFS / jumps
 ```
 
 `snap.mjs` renders single frames for review (`V=1 node snap.mjs out 13.4` for vertical).
